@@ -1,0 +1,11 @@
+# Ignore movie videos
+**/videos/
+*.mp4
+*.avi
+*.mkv
+
+# Ignore heavy output/cache files
+insideout2_output/
+__pycache__/
+.DS_Store
+.streamlit/
