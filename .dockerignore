@@ -1,6 +1,0 @@
-.streamlit/
-insideout2_output/
-__pycache__/
-*.pyc
-.env
-.DS_Store
