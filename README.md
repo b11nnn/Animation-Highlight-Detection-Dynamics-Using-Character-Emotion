@@ -1,7 +1,4 @@
 # Animation-Highlight-Detection-Dynamics-Using-Character-Emotion
-programming for artificial intelligence
-
-# Animation Highlight Detection Using Character Emotion Dynamics
 
 This project detects highlight moments in animation videos by analyzing character-level emotional dynamics.
 
@@ -24,6 +21,108 @@ The overall pipeline consists of:
 4. Character emotion classification using CLIP with LoRA fine-tuning
 5. Segment-level feature extraction
 6. Highlight prediction using regression, classification, and hybrid ensemble models
+
+## Character Emotion Classification
+
+We used CLIP as the base model for character emotion classification.
+
+The base model was:
+
+```python
+openai/clip-vit-base-patch32
+```
+
+However, zero-shot CLIP can struggle with stylized animation characters because their facial expressions are often exaggerated or visually different from real human faces.
+
+To improve emotion classification performance for animation images, we applied LoRA fine-tuning to CLIP.
+
+## LoRA Fine-Tuning
+
+We built an animation emotion dataset using cropped character face images.
+
+Each image was organized into one of the target emotion classes, such as:
+
+- happy
+- sad
+- angry
+- fearful
+- disgusted
+- surprised
+- neutral
+
+Then, we defined a custom dataset class to load the cropped character images and their emotion labels.
+
+```python
+class AEAAAnimationDataset(Dataset):
+    def __init__(self, base_dir, processor, emotion_list):
+        self.base_dir = base_dir
+        self.processor = processor
+        self.emotion_list = emotion_list
+        self.emotion_to_idx = {
+            emotion: idx for idx, emotion in enumerate(self.emotion_list)
+        }
+```
+
+We loaded the original CLIP model and inserted LoRA adapters into the visual encoder.
+
+```python
+base_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(DEVICE)
+clip_processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+```
+
+The LoRA configuration was:
+
+```python
+lora_config = LoraConfig(
+    r=8,
+    lora_alpha=16,
+    target_modules=["q_proj", "v_proj"],
+    lora_dropout=0.05,
+    bias="none",
+    modules_to_save=["visual_projection"]
+)
+```
+
+This means that instead of updating the entire CLIP model, we only trained a small number of additional LoRA parameters.
+
+This makes the model more efficient while still adapting it to the animation domain.
+
+## Training Setup
+
+For fine-tuning, we used text prompts for each emotion class.
+
+```python
+emotion_prompts = [f"a photo of a character feeling {e}" for e in EMOTIONS]
+```
+
+The model was trained using image-text similarity logits from CLIP.
+
+```python
+loss = criterion(outputs.logits_per_image, labels)
+```
+
+Training was conducted for 3 epochs with the following setup:
+
+```python
+batch_size = 16
+learning_rate = 5e-5
+optimizer = AdamW
+loss_function = CrossEntropyLoss
+```
+
+After training, the LoRA weights were saved and later loaded back into the original CLIP model.
+
+```python
+lora_model.save_pretrained(OUTPUT_DIR)
+```
+
+If the trained LoRA weights were available, we combined them with the original CLIP model.
+
+```python
+lora_clip_model = PeftModel.from_pretrained(base_model, LORA_WEIGHTS_PATH).to(DEVICE)
+```
+
+If the weights were not found, the pipeline used the original zero-shot CLIP model as a fallback.
 
 ## Target Construction
 
@@ -111,7 +210,7 @@ This project demonstrates that character-level emotional mismatch and temporal e
 Main contributions include:
 
 - constructing highlight labels from YouTube replay heatmap data
-- fine-tuning CLIP for animation character emotion classification
+- adapting CLIP to animation character emotion classification using LoRA fine-tuning
 - modeling emotional mismatch between expected and predicted character emotions
 - designing temporal emotion-based features
 - combining regression and classification models through hybrid ensemble scoring
@@ -119,3 +218,11 @@ Main contributions include:
 ## Future Work
 
 This approach can be extended to other animation datasets and more diverse story-based videos.
+
+Future improvements may include:
+
+- using a larger animation emotion dataset
+- improving character detection accuracy
+- comparing more vision-language models
+- reducing dependency on LLM-generated intermediate outputs
+- applying the pipeline to longer and more diverse animation videos
