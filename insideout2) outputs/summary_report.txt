@@ -1,0 +1,54 @@
+Inside Out 2 감정 캐릭터 표정 분석 데모 리포트
+============================================================
+
+[분석 대상 캐릭터]
+- Joy(기쁨): 기대 감정 = happy
+- Sadness(슬픔): 기대 감정 = sad
+- Anger(버럭): 기대 감정 = angry
+- Fear(소심): 기대 감정 = fearful
+- Disgust(까칠): 기대 감정 = disgusted
+- Anxiety(불안): 기대 감정 = fearful
+- Envy(부럽): 기대 감정 = angry
+- Ennui(무기력): 기대 감정 = neutral
+- Embarrassment(당황): 기대 감정 = fearful
+- Riley(라일리): 기대 감정 = neutral
+
+[전체 탐지 결과]
+- 총 탐지 crop 수: 633
+- 등장 캐릭터 수: 9
+
+[캐릭터별 탐지 수]
+character
+Riley            299
+Anger            188
+Disgust           50
+Embarrassment     22
+Joy               21
+Anxiety           20
+Fear              14
+Envy              14
+Sadness            5
+
+[예측 감정 분포]
+predicted_emotion
+neutral      201
+angry         98
+sad           90
+fearful       85
+disgusted     68
+happy         60
+surprised     31
+
+[평균 Mismatch Score]
+0.43601895734597157
+
+[상위 하이라이트 후보]
+- 04:10 ~ 04:15 | Highlight Score=0.620, Mismatch=0.614, Emotion Entropy=0.656
+- 19:55 ~ 20:00 | Highlight Score=0.618, Mismatch=0.800, Emotion Entropy=0.712
+- 29:00 ~ 29:05 | Highlight Score=0.616, Mismatch=0.567, Emotion Entropy=0.802
+- 13:05 ~ 13:10 | Highlight Score=0.614, Mismatch=0.800, Emotion Entropy=0.534
+- 13:50 ~ 13:55 | Highlight Score=0.611, Mismatch=0.344, Emotion Entropy=0.783
+
+[주의]
+이 결과는 학습된 전용 모델이 아니라 zero-shot detection과 CLIP 기반 감정 분류를 사용한 데모입니다.
+따라서 정확도 평가는 제한적이며, 정식 프로젝트에서는 Roboflow 라벨링 + YOLOv8-seg + CNN/ViT 감정 분류 모델 학습이 필요합니다.
